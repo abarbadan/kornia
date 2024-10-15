@@ -84,6 +84,7 @@ class RandomAffine(GeometricAugmentationBase2D):
         same_on_batch: bool = False,
         align_corners: bool = False,
         padding_mode: Union[str, int, SamplePadding] = SamplePadding.ZEROS.name,
+        fill_value: Union[Tensor, float, Tuple[float, float, float]] = 0.0,
         p: float = 0.5,
         keepdim: bool = False,
     ) -> None:
@@ -92,6 +93,7 @@ class RandomAffine(GeometricAugmentationBase2D):
         self.flags = {
             "resample": Resample.get(resample),
             "padding_mode": SamplePadding.get(padding_mode),
+            "fill_value": fill_value,
             "align_corners": align_corners,
         }
 
@@ -119,6 +121,7 @@ class RandomAffine(GeometricAugmentationBase2D):
             flags["resample"].name.lower(),
             align_corners=flags["align_corners"],
             padding_mode=flags["padding_mode"].name.lower(),
+            fill_value=flags["fill_value"],
         )
 
     def inverse_transform(
