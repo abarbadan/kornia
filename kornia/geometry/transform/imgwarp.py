@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional
+from typing import Optional, Union, Tuple
 
 import torch
 import torch.nn.functional as F
@@ -135,7 +135,7 @@ def warp_affine(
     mode: str = "bilinear",
     padding_mode: str = "zeros",
     align_corners: bool = True,
-    fill_value: Tensor = zeros(3),  # needed for jit
+    fill_value: Union[Tensor, float, Tuple[float, float, float]] = 0.0,
 ) -> Tensor:
     r"""Apply an affine transformation to a tensor.
 
@@ -198,6 +198,12 @@ def warp_affine(
     grid = F.affine_grid(src_norm_trans_dst_norm[:, :2, :], [B, C, dsize[0], dsize[1]], align_corners=align_corners)
 
     if padding_mode == "fill":
+        if isinstance(fill_value, tuple):
+            fill_value = tensor(fill_value)
+        elif isinstance(fill_value, float):
+            fill_value = fill_value * ones(3)
+        elif not isinstance(fill_value, Tensor):
+            raise TypeError(f"fill_value must be a Tensor, float, or tuple of floats. Got {type(fill_value)}")
         return _fill_and_warp(src, grid, align_corners=align_corners, mode=mode, fill_value=fill_value)
 
     return F.grid_sample(src, grid, align_corners=align_corners, mode=mode, padding_mode=padding_mode)
